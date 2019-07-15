@@ -1,7 +1,7 @@
 {
   "name": "pagego",
   "version": "1.0.0",
-  "description": "This is a react based SPA system",
+  "description": "This is a React based SPA system for mobile wap development.",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "index.js"
   ],
   "author": "xingzhou",
-  "keywords": ["pagego", "router", "react", "SPA"],
+  "keywords": ["pagego", "router", "react", "SPA", "mobile"],
   "license": "MIT",
   "dependencies": {
     "eventemitter3": "^3.1.2",

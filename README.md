@@ -1,5 +1,8 @@
 ## 简介
- 一个以页面为核心的单页面系统
+ 一个以页面为核心的适用于wap开发的单页面系统
+
+## Introduction
+This is a React based SPA system for mobile wap development.
 
  ---
 
