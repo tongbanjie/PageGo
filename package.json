@@ -1,0 +1,32 @@
+{
+  "name": "pagego",
+  "version": "1.0.0",
+  "description": "This is a react based SPA system",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tongbanjie/PageGo.git"
+  },
+  "scripts": {
+    "build": "rm -rf build && gulp"
+  },
+  "files": [
+    "build",
+    "index.js"
+  ],
+  "author": "xingzhou",
+  "keywords": ["pagego", "router", "react", "SPA"],
+  "license": "MIT",
+  "dependencies": {
+    "eventemitter3": "^3.1.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  },
+  "devDependencies": {
+    "@types/react": "^16.8.23",
+    "@types/react-dom": "^16.8.4",
+    "gulp": "^4.0.2",
+    "gulp-typescript": "^5.0.1",
+    "typescript": "^3.4.1"
+  }
+}

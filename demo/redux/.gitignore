@@ -1,0 +1,6 @@
+node_modules
+dest
+packCache
+package-lock.json
+.DS_Store
+*.zip
