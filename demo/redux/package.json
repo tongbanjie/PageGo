@@ -14,7 +14,9 @@
     "pagego": "^1.0.0",
     "fastclick": "^1.0.6",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react-dom": "^16.8.6",
+    "redux": "^4.0.1",
+    "react-redux": "^6.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -24,6 +26,7 @@
     "babel-preset-react": "^6.11.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.24.1",
+    "pretty": "^2.0.0",
     "css-loader": "^0.28.11",
     "file-loader": "^1.1.11",
     "fs-extra": "^6.0.1",
