@@ -1,0 +1,31 @@
+header {
+  position: relative;
+  background-color: #415EAB;
+  font-size: 16px;
+  color: #fff;
+  line-height: 44px;
+  text-align: center;
+  width: 100%
+}
+
+footer {
+  background-color: #415EAB;
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  font-size: 16px;
+  color: #fff;
+  line-height: 52px;
+  text-align: center;
+}
+
+.backbut{
+  position: absolute;
+  left: 0;
+  line-height: 44px;
+  font-size: 16px;
+  background-color: #415EAB;
+  padding: 0 15px;
+}

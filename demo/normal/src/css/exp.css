@@ -1,0 +1,48 @@
+h2, h3, p , i{
+  padding: 4px 15px;
+  color: #262626
+}
+
+button{
+  margin: 5px 15px 15px;
+  width: 260px;
+  height: 44px;
+  font-size: 18px;
+  text-align: center;
+  line-height: 44px;
+  background-color: #4781D7;
+  color: #fff;
+  border-radius: 22px;
+  border: none
+}
+
+input{
+  margin: 0 15px 15px;
+  border: 1px solid #7F95CB;
+  padding: 5px;
+  border-radius: 4px;
+  width: 260px;
+  line-height: 32px;
+  font-size: 16px;
+  color: #2f61ab
+}
+
+.red{
+  color: #f0594e;
+}
+
+.warn{
+  color: #FF8D00;
+  font-size: 12px;
+}
+
+.back{
+  margin: 15px;
+  padding: 0 15px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #4781D7;
+  width: 58px;
+  line-height: 36px;
+  border-radius: 18px;
+}

@@ -1,0 +1,45 @@
+{
+  "name": "pagego_demo_normal",
+  "version": "1.0.0",
+  "description": "normal demo for pagego",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tongbanjie/PageGo"
+  },
+  "scripts": {
+    "build": "gulp -p",
+    "dev": "gulp dev"
+  },
+  "clientType": "app",
+  "dependencies": {
+    "pagego": "^1.0.0",
+    "fastclick": "^1.0.6",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  },
+  "devDependencies": {
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.11.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "css-loader": "^0.28.11",
+    "file-loader": "^1.1.11",
+    "fs-extra": "^6.0.1",
+    "gulp": "^4.0.2",
+    "gulp-connect": "^5.7.0",
+    "gulp-rev-replace": "^0.4.4",
+    "gulp-watch": "^5.0.1",
+    "iscroll": "^5.2.0",
+    "pretty": "^2.0.0",
+    "style-loader": "^0.21.0",
+    "webpack": "^4.10.2",
+    "webpack-chunk-hash": "^0.6.0",
+    "webpack-cli": "^3.1.2",
+    "webpack-manifest-plugin": "^2.0.4",
+    "yargs": "^5.0.0"
+  },
+  "license": "MIT"
+}
