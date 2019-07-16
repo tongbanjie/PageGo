@@ -231,6 +231,7 @@ class APP extends React.Component<Props, State> {
             position: absolute;
             width: 100%;
             height: 100%;
+            background-color: #fff;
             -webkit-transition: -webkit-transform 0.3s;
             transition: transform 0.3s;
             box-shadow: -1px 0px 9px rgba(0,0,0,0.12);
@@ -238,7 +239,6 @@ class APP extends React.Component<Props, State> {
           }
 
           .pagego-hoverPage .footerContainer,.pagego-pageContainer .pagego-page .footerContainer{
-            height: 84px;
             background-color: #fff;
             overflow: hidden;
             position: absolute;

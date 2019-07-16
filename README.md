@@ -5,6 +5,12 @@
 This is a React based SPA system for mobile wap development.
 
  ---
+ 
+## 安装
+使用npm来安装
+```js
+npm i pagego
+```
 
 ## 用法
 
