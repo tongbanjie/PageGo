@@ -3,6 +3,20 @@ import * as ReactDOM from 'react-dom';
 import APP from './app';
 import './polyfill/Object-assign';
 
+interface Param {
+  pageList: Function[],
+  pageWillSwitch?: Function,
+  pageDidSwitch?: Function,
+  initContext?: any,
+  globalProps?: any,
+  MidPathWhenOnlyDomain?: string,
+  baseUrlWithoutProtocol?: string,
+  noHashRouter?: boolean,
+  Connector?: any,
+  Provider?: any,
+  store?: any
+}
+
 export default (function () {
   'use strict';
   const fragment = document.createDocumentFragment();
@@ -19,10 +33,10 @@ export default (function () {
   let initUrlStateFlag = true;
   // pageList 是打包时注册的各页面的异步路由集合
   let pageList:any[];
-  let popHashArr = [], preLoadArr = [];
+  let popHashArr = [], hoverTitles = [], preLoadArr = [];
   // hash路由在url中的#后面标记页面，但是整体还是走pushstate
   // 默认使用hash标记路由
-  let hashRouter =  true;
+  let hashRouter = true;
   // 全局props
   let globalProps;
   // base url
@@ -39,33 +53,31 @@ export default (function () {
   let swipeback = false;
   // 默认Context值
   let initContext = null
+  // 页面切换的生命周期回调
+  let pageWillSwitch, pageDidSwitch;
 
   return {
-    init: function(param): Promise<void> {
-      if (param && param.pageWillSwitch) this.pageWillSwitch = param.pageWillSwitch;
-      if (param && param.pageDidSwitch) this.pageDidSwitch = param.pageDidSwitch;
+    init: function(param:Param): Promise<void> {
+      // 有页面列表
+      if (param && param.pageList) {
+        pageList = param.pageList
+      } else {
+        throw('需要初始化的pageList配置文件')
+      }
 
-      initContext = param.initContext
+      pageWillSwitch = param.pageWillSwitch;
+      pageDidSwitch = param.pageDidSwitch;
+      initContext = param.initContext;
+      MidPathWhenOnlyDomain = param.MidPathWhenOnlyDomain
+      // 全局非redux的props
+      globalProps = param.globalProps
+      
       // 如果手动设置了baseurl
       if (param.baseUrlWithoutProtocol) {
         baseurl = location.protocol + '//' + param.baseUrlWithoutProtocol;
         baseurl = baseurl.endsWith('/') ? (baseurl + '/') : baseurl;
       }
 
-      if(param.MidPathWhenOnlyDomain) {
-        MidPathWhenOnlyDomain = param.MidPathWhenOnlyDomain
-      }
-
-      // 全局非redux的props
-      if (param.globalProps) {
-        globalProps = param.globalProps
-      }
-      // 有页面列表
-      if (param.pageList) {
-        pageList = param.pageList
-      } else {
-        throw('需要初始化的pageList配置文件')
-      }
       // 若设置不使用hash路由，设置hashRouter为false
       if (param.noHashRouter) {
         hashRouter = false
@@ -172,7 +184,7 @@ export default (function () {
       let renderPageData = Object.assign({}, globalProps, pageData);
 
       // 若有注册页面开始回调事件，执行
-      this.pageWillSwitch && this.pageWillSwitch({
+      pageWillSwitch && pageWillSwitch({
         pageName: PageName,
         pageTitle: PageTitle,
         pageData: pageData
@@ -180,7 +192,7 @@ export default (function () {
 
       // 若有注册页面切换成功回调事件，执行
       const callDidSwitch = () => {
-        this.pageDidSwitch && this.pageDidSwitch({
+        pageDidSwitch && pageDidSwitch({
           pageName: PageName,
           pageTitle: PageTitle,
           pageData: renderPageData
@@ -204,6 +216,7 @@ export default (function () {
           preventClickPop.style.display = 'none';
         }, 350)
         popHashArr.push(nowPath);
+        hoverTitles.push(document.title);
       }
 
       nowPath = PageName.toLowerCase();
@@ -296,7 +309,7 @@ export default (function () {
           PageSwipeBack: PageSwipeBack
         }, ()=>{
           // 若有注册页面切换成功回调事件，执行
-          this.pageDidSwitch && setTimeout(callDidSwitch, 350);
+          pageDidSwitch && setTimeout(callDidSwitch, 350);
           // 如果有预加载项，则预加载
           preLoad && this.preLoad(preLoad);
         });
@@ -411,7 +424,7 @@ export default (function () {
         return;
       }
 
-      var pageName = pageInfo.name,
+      const pageName = pageInfo.name,
         thisIndex = pageInfo.index,
         dvalue = nowIndex - thisIndex;
       // 浏览器后退
@@ -420,8 +433,9 @@ export default (function () {
           this.go(pageName, fromDirection === 'current' ? 'current' : 'back', pageInfo.pageData, null, true)
         } else if (fromDirection === 'top' || fromDirection === 'bottom' || fromDirection === 'next-hover'){
           !swipeback && app.hoverBack(dvalue);
-          var popArr = popHashArr.splice(-dvalue, dvalue);
-          nowPath = popArr[0];
+          nowPath = popHashArr.splice(-dvalue, dvalue)[0];
+          // hover返回后重置title
+          document.title = hoverTitles.splice(-dvalue, dvalue)[0];
           fromDirection = pageInfo.direction;
         } else {
           console.error('路由出错了')

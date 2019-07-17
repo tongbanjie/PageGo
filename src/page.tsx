@@ -25,7 +25,7 @@ const PageFactory = (pageProps) => {
 
       constructor(props) {
         super(props)
-        this.key = pageProps.PageName + pageProps.index;
+        this.key = pageProps.PageName + pageProps.index + (props.PageKey ? ('/' + props.PageKey) : '');
         // 如果有存储的state数据，恢复至页面
         if (!!stateStore[this.key]) {
           Object.assign(this.state, stateStore[this.key]);

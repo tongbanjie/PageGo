@@ -126,7 +126,7 @@ class APP extends React.Component<Props, State> {
         pages: [
           <Page key='1' />,
           this.nowPage,
-          this.prePage
+          <Page key='3' />
         ],
         pageSetType: 'NORMAL'
       })
