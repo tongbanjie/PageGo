@@ -14,6 +14,11 @@ npm i pagego
 
 ## [这里是详细文档](https://github.com/tongbanjie/PageGo/wiki)
 
+## 示例(DEMO)
++ [功能展示](https://pagego.github.io/normal/index.html)
++ [hash路由](https://pagego.github.io/hash/)
++ [Context](https://pagego.github.io/context/index.html)
+
 ## 用法
 
 以下三个步骤可能帮你快速开始使用PageGo, 不过更建议你查看具体[**文档**](https://github.com/tongbanjie/PageGo/wiki)

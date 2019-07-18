@@ -48,7 +48,13 @@ gulp.task('minify-js', function(cb) {
   webpack.on('exit', (code) => {
     webpack.kill()
   });
-  cb();
+  if (devType) {
+    cb();
+  } else {
+    webpack.on('close', function(){
+      cb();
+    })
+  }
 });
 
 gulp.task('createhtml', function(cb){

@@ -8,7 +8,7 @@ PageGo.init({
   pageList: pageList,
   // 在本demo中会为每个page创建html文件，因此可以使用正常路由
   // 如果你将此项noHashRouter删除，demo仍将正常工作
-  noHashRouter: true
+  // noHashRouter: true
 }).then(function() {
   PageGo.go(window.initPagePath);
 });
