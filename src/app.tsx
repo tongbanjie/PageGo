@@ -4,15 +4,14 @@ import Container from './container';
 import {Provider} from './context';
 
 interface Props {
-  PageName: string,
-  index: string|number,
+  PageName?: string,
+  index?: string|number,
   currentpage: any,
   renderPageData?: any,
   key?: string,
   Connector?: any,
   initContext?: any,
   reduxMode?: boolean,
-  isHookPage?: boolean,
   PageSwipeBack: boolean,
   preventClickPop: HTMLElement,
   back: Function
@@ -33,7 +32,7 @@ class APP extends React.Component<Props, State> {
 
   constructor(props:Props) {
     super(props);
-    this.nowPage = <Page key={this.props.PageName + this.props.index} {...this.props} />;
+    this.nowPage = <Page key={props.PageName ? (props.PageName + props.index) : 'ssr'} {...props} />;
     this.hoverRefs = [];
     if (props.initContext) {
       this.context = React.createContext(props.initContext);

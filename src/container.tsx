@@ -30,7 +30,7 @@ class Container extends React.Component<Props> {
   constructor(props:Props) {
     super(props);
     this.swipeRef = React.createRef();
-    this.pageWidth = window.innerWidth;
+    this.pageWidth = typeof(window) === 'undefined' ? 375 : window.innerWidth;
   }
 
   componentDidMount = () => {

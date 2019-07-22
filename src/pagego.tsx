@@ -1,7 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import APP from './app';
-import './polyfill/Object-assign';
 
 interface Param {
   pageList: Function[],
@@ -19,17 +18,10 @@ interface Param {
 
 export default (function () {
   'use strict';
-  const fragment = document.createDocumentFragment();
   // 创建容器和保护层，并统一添加至body
-  const preventClickPop = document.createElement('div'),
-    screenPage = document.createElement('div');
-  preventClickPop.setAttribute('class', 'pagego-preventClickPop');
-  screenPage.setAttribute('class', 'pagego-screenPage');
-  fragment.appendChild(screenPage);
-  fragment.appendChild(preventClickPop);
-  document.body.appendChild(fragment);
+  let preventClickPop:HTMLElement, screenPage:HTMLElement;
 
-  const noHistoryState = !window.history.replaceState;
+  const noHistoryState = typeof(window) === 'undefined' ? false: !window.history.replaceState ;
   let initUrlStateFlag = true;
   // pageList 是打包时注册的各页面的异步路由集合
   let pageList:any[];
@@ -95,6 +87,22 @@ export default (function () {
         // 不具备redux所有完备参数，抛错
         throw('redux模式需要Connector, Provider及store')
       }
+
+      const fragment = document.createDocumentFragment();
+      preventClickPop = document.createElement('div');
+      preventClickPop.setAttribute('class', 'pagego-preventClickPop');
+      fragment.appendChild(preventClickPop);
+      const tmpScreenPage = document.getElementById('pagego-screenPage');
+      if (tmpScreenPage) {
+        screenPage = tmpScreenPage
+      } else {
+        screenPage = document.createElement('div');
+        screenPage.setAttribute('class', 'pagego-screenPage');
+        fragment.appendChild(screenPage);
+      }
+
+      document.body.appendChild(fragment);
+
 
       window.addEventListener('popstate', evt=>{
         if (evt.state) {
@@ -173,7 +181,6 @@ export default (function () {
 
     // 获取到要滑动至的页面，并进行位置设置
     renderGo: function(currentpage, pageAttribute, pageData?, historyGo?, replace?) {
-      const isHookPage = !!currentpage.hookPage;
       const defaultProps = currentpage.defaultProps || currentpage.hookPage,
         preLoad = defaultProps.PreLoad;
       const direction = pageAttribute.direction || 'next';
@@ -244,7 +251,6 @@ export default (function () {
           name: nowPath,
           index: nowIndex,
           direction: direction,
-          isHookPage: isHookPage,
           // pushState及replaceState 是不允许存入function的
           // 通过这种方式去除function
           // 因此，跨页面传参时不要传入函数，因为这些函数很可能会失效
@@ -276,12 +282,11 @@ export default (function () {
           renderPageData: renderPageData,
           preventClickPop: preventClickPop,
           reduxMode: reduxMode,
-          isHookPage: isHookPage,
           back: this.back,
           initContext: initContext,
           PageSwipeBack: PageSwipeBack
         }
-        ReactDOM.render(
+        ReactDOM.hydrate(
           reduxMode
           ? <Provider store={ store }>
               <APP {...appProps} Connector = { Connector }  />
@@ -304,7 +309,6 @@ export default (function () {
           // 非redux模式值为空
           Connector: Connector,
           reduxMode: reduxMode,
-          isHookPage: isHookPage,
           initContext: initContext,
           PageSwipeBack: PageSwipeBack
         }, ()=>{

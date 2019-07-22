@@ -9,7 +9,6 @@ function Detail (props) {
         <div className="back" onClick={()=>{PageGo.back()}}>
           {`< back`}
         </div>
-    
         <h2>Number is: {props.number}</h2>
 
         <ShowNumber />

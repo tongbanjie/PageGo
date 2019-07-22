@@ -7,7 +7,6 @@ interface PageProps {
   renderPageData?: any,
   key?: string,
   Connector?: any,
-  isHookPage?: boolean,
   reduxMode?: boolean,
   initContext?: any
 }
@@ -53,7 +52,7 @@ export class Page extends React.Component<PageProps> {
     const {currentpage, ...pageProps} = this.props;
     let InnerPage;
     // hook 页面不支持state恢复及redux模式
-    if (pageProps.isHookPage) {
+    if (!!currentpage && currentpage.hookPage) {
       InnerPage = currentpage;
     } else {
       if (currentpage) {
@@ -114,7 +113,7 @@ export class HoverPage extends React.Component<HoverProps, HoverState> {
     const {currentpage, ...pageProps} = props
     let InnerPage;
     // hook 页面不支持state恢复及redux模式
-    if (pageProps.isHookPage) {
+    if (!!currentpage && currentpage.hookPage) {
       InnerPage = currentpage
     } else {
       InnerPage = PageFactory({
