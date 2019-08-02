@@ -75,14 +75,13 @@ class Container extends React.Component<Props> {
   translate = (dist, speed, ispercent?)=> {
     const slide = this.swipeRef.current;
     const style = slide && slide.style;
-
-    style.webkitTransition = style.transition = 'transform ' + speed + 'ms ease';
+    const cssText = speed ? ('-webkit-transition: -webkit-transform '+speed+'ms ease;transition: transform '+speed+'ms ease;') : '';
+    style.cssText = cssText;
     if (ispercent) {
       style.webkitTransform = 'translate3d('+dist+'%,0,0)';
     } else {
       style.webkitTransform = 'translate3d(' + (dist - this.pageWidth) + 'px,0,0)';
     }
-    
   }
 
   // next与back转场后会触发
@@ -108,7 +107,6 @@ class Container extends React.Component<Props> {
   }
 
   render() {
-    const PageSwipeBack = this.props.PageSwipeBack;
     return (
       <div id="pageContainer" ref={this.swipeRef}
         onTransitionEnd={this.transitionEnd}

@@ -7,7 +7,6 @@ interface PageProps {
   renderPageData?: any,
   key?: string,
   Connector?: any,
-  reduxMode?: boolean,
   initContext?: any
 }
 
@@ -48,10 +47,9 @@ const PageFactory = (pageProps) => {
 export class Page extends React.Component<PageProps> {
 
   render() {
-
     const {currentpage, ...pageProps} = this.props;
     let InnerPage;
-    // hook 页面不支持state恢复及redux模式
+    // hook 页面不支持state恢复
     if (!!currentpage && currentpage.hookPage) {
       InnerPage = currentpage;
     } else {
@@ -61,7 +59,8 @@ export class Page extends React.Component<PageProps> {
         })(currentpage);
       }
     }
-    if (this.props.reduxMode) {
+    // 如果是redux模式 通过Connector生成新的InnerPage
+    if (this.props.Connector) {
       InnerPage = this.props.Connector(InnerPage);
     }
 
@@ -70,10 +69,10 @@ export class Page extends React.Component<PageProps> {
       {
         currentpage
         ? (
-          !!this.props.initContext
+          this.props.initContext
           ? <Context.Consumer>
-            {({state, setContext}) => (
-              <InnerPage {...pageProps.renderPageData} {...state} setContext={setContext} />
+            {({state, setContext, dispatch}) => (
+              <InnerPage {...pageProps.renderPageData} {...state} setContext={setContext} dispatch={dispatch} />
             )}
             </Context.Consumer>
           : <InnerPage {...pageProps.renderPageData} />
@@ -92,7 +91,6 @@ interface HoverProps {
   renderPageData: any,
   PageSwipeBack: boolean,
   back: Function,
-  reduxMode?: boolean,
   Connector?: any
 }
 
@@ -120,15 +118,15 @@ export class HoverPage extends React.Component<HoverProps, HoverState> {
         ...pageProps
       })(currentpage)
     }
-    if (this.props.reduxMode) {
+    if (this.props.Connector) {
       InnerPage = this.props.Connector(InnerPage)
     }
 
     // 根据initContext判断是否是Context模式
     this.innerPage = !!props.initContext
       ? <Context.Consumer>
-        {({state, setContext}) => (
-          <InnerPage {...pageProps.renderPageData} {...state} setContext={setContext} />
+        {({state, setContext, dispatch}) => (
+          <InnerPage {...pageProps.renderPageData} {...state} setContext={setContext} dispatch={dispatch} />
         )}
         </Context.Consumer>
       : <InnerPage {...pageProps.renderPageData} />

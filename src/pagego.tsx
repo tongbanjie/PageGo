@@ -1,12 +1,15 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import APP from './app';
+import './polyfill/string';
 
 interface Param {
   pageList: Function[],
   pageWillSwitch?: Function,
   pageDidSwitch?: Function,
   initContext?: any,
+  initState?: any,
+  reducer?: Function,
   globalProps?: any,
   MidPathWhenOnlyDomain?: string,
   baseUrlWithoutProtocol?: string,
@@ -45,6 +48,8 @@ export default (function () {
   let swipeback = false;
   // 默认Context值
   let initContext = null
+  // useReducer模式
+  let reducer;
   // 页面切换的生命周期回调
   let pageWillSwitch, pageDidSwitch;
 
@@ -59,7 +64,9 @@ export default (function () {
 
       pageWillSwitch = param.pageWillSwitch;
       pageDidSwitch = param.pageDidSwitch;
-      initContext = param.initContext;
+      initContext = param.initContext || param.initState;
+      reducer = param.reducer;
+
       MidPathWhenOnlyDomain = param.MidPathWhenOnlyDomain
       // 全局非redux的props
       globalProps = param.globalProps
@@ -281,9 +288,9 @@ export default (function () {
           index: nowIndex,
           renderPageData: renderPageData,
           preventClickPop: preventClickPop,
-          reduxMode: reduxMode,
           back: this.back,
           initContext: initContext,
+          reducer: reducer,
           PageSwipeBack: PageSwipeBack
         }
         ReactDOM.hydrate(
@@ -308,8 +315,8 @@ export default (function () {
           history: historyGo,
           // 非redux模式值为空
           Connector: Connector,
-          reduxMode: reduxMode,
           initContext: initContext,
+          reducer: reducer,
           PageSwipeBack: PageSwipeBack
         }, ()=>{
           // 若有注册页面切换成功回调事件，执行
@@ -353,7 +360,7 @@ export default (function () {
     getPushUrl: function(defaultProps, pageData){
       const preUrl = location.origin + location.pathname;
       const hash = location.hash, search = location.search;
-      const suffixPath = nowPath + '.html';
+      const suffixPath = nowPath + (preUrl.endsWith('.html') ? '.html' : '');
       let pushUrl = '';
 
       // 获取基础url
@@ -364,8 +371,8 @@ export default (function () {
           baseurl = preUrl;
         }
       }
-      // 只能将index页面映射成域名
-      if (window.location.pathname === '/' && nowPath === 'index') {
+
+      if (window.location.pathname === '/') {
         // 如https://m.xxx.com/ 的形态情况下处理
         pushUrl = preUrl;
       } else {

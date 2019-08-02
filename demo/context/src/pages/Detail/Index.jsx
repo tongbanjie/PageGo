@@ -3,6 +3,7 @@ import ShowNumber from './ShowNumber';
 import React from 'react';
 
 function Detail (props) {
+
   return (
     <div>
       <div className='innerContainer'>
@@ -10,7 +11,6 @@ function Detail (props) {
           {`< back`}
         </div>
         <h2>Number is: {props.number}</h2>
-
         <ShowNumber />
       </div>
     </div>
@@ -18,7 +18,6 @@ function Detail (props) {
 }
 
 Detail.hookPage = {
-  PageName: 'detail',
   PageTitle: 'detail'
 }
 

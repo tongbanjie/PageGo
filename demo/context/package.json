@@ -11,8 +11,8 @@
     "dev": "gulp dev"
   },
   "dependencies": {
-    "pagego": "^1.0.0",
     "fastclick": "^1.0.6",
+    "pagego": "^1.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
   },

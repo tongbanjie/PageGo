@@ -4,7 +4,6 @@ import React from 'react'
 class Index extends React.Component {
 
   static defaultProps = {
-    PageName: 'index',
     PageTitle: 'index'
   }
   
@@ -16,12 +15,14 @@ class Index extends React.Component {
     this.props.setContext({
       number: this.props.number + 1
     })
+    // this.props.dispatch({type: 'increment'})
   }
 
   decrement = () => {
     this.props.setContext({
       number: this.props.number - 1
     })
+    // this.props.dispatch({type: 'decrement'})
   }
 
   render() {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Page, HoverPage } from './page';
 import Container from './container';
-import {Provider} from './context';
+import {Provider, ReducerProvider} from './context';
 
 interface Props {
   PageName?: string,
@@ -11,7 +11,7 @@ interface Props {
   key?: string,
   Connector?: any,
   initContext?: any,
-  reduxMode?: boolean,
+  reducer?: Function,
   PageSwipeBack: boolean,
   preventClickPop: HTMLElement,
   back: Function
@@ -34,9 +34,6 @@ class APP extends React.Component<Props, State> {
     super(props);
     this.nowPage = <Page key={props.PageName ? (props.PageName + props.index) : 'ssr'} {...props} />;
     this.hoverRefs = [];
-    if (props.initContext) {
-      this.context = React.createContext(props.initContext);
-    }
 
     this.state = {
       pages:  [
@@ -180,9 +177,13 @@ class APP extends React.Component<Props, State> {
     return (
       <React.Fragment>
         {
-          this.props.initContext
+          this.props.initContext && !this.props.reducer
           ? <Provider initContext={this.props.initContext}>{container}</Provider>
-          : container
+          : (
+            this.props.reducer
+            ? <ReducerProvider initContext={this.props.initContext} reducer={this.props.reducer}>{container}</ReducerProvider>
+            : container
+          )
         }
         <style>
           {`
