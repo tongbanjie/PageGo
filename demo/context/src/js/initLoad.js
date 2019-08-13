@@ -6,8 +6,6 @@ import '../css/exp.css';
 
 !!document.body && FastClick.attach(document.body);
 
-const initialState = {number: 1};
-
 function reducer(state, action) {
   switch (action.type) {
     case 'increment':
@@ -19,14 +17,12 @@ function reducer(state, action) {
   }
 }
 
+const initialState = {number: 1};
 
 PageGo.init({
   pageList: pageList,
   noHashRouter: true,
-  // initContext: {
-  //   number: 1
-  // },
-  initState: initialState,
+  initContext: initialState,
   // reducer: reducer
 }).then(function() {
   PageGo.go(window.initPagePath);

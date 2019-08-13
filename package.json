@@ -1,6 +1,6 @@
 {
   "name": "pagego",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "a React based SPA system for mobile wap development.",
   "main": "index.js",
   "repository": {

@@ -107,17 +107,14 @@ export default (function () {
         screenPage.setAttribute('class', 'pagego-screenPage');
         fragment.appendChild(screenPage);
       }
-
       document.body.appendChild(fragment);
-
+      screenPage.style.height = window.innerHeight + 'px';
 
       window.addEventListener('popstate', evt=>{
         if (evt.state) {
           this.renderHistoryPage(evt.state);
         }
       }, false);
-
-      screenPage.style.height = window.innerHeight + 'px';
 
       return Promise.resolve();
     },
