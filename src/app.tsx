@@ -255,6 +255,10 @@ class APP extends React.Component<Props, State> {
             -webkit-overflow-scrolling:touch;
             width: 100%;
             z-index: 90;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
           }
 
           .pagego-animateTop{

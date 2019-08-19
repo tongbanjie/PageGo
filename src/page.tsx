@@ -178,7 +178,7 @@ export class HoverPage extends React.Component<HoverProps, HoverState> {
 
   // 动画结束回调事件，若是关闭的话，卸载组件
   transitionEnd = () => {
-    if (this.events.touchStatus === 'end' && this.events.isValidSlide) {
+    if (this.events && this.events.touchStatus === 'end' && this.events.isValidSlide) {
       this.props.back(-1, true);
       this.props.uninstall();
     }
