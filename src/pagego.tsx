@@ -198,7 +198,8 @@ export default (function () {
       pageWillSwitch && pageWillSwitch({
         pageName: PageName,
         pageTitle: PageTitle,
-        pageData: pageData
+        pageData: pageData,
+        routeForward: historyGo ? historyGo === 'forward' : true
       });
 
       // 若有注册页面切换成功回调事件，执行
@@ -206,7 +207,8 @@ export default (function () {
         pageDidSwitch && pageDidSwitch({
           pageName: PageName,
           pageTitle: PageTitle,
-          pageData: renderPageData
+          pageData: renderPageData,
+          routeForward: historyGo ? historyGo === 'forward' : true
         })
       }
 
@@ -309,7 +311,7 @@ export default (function () {
           renderPageData: renderPageData,
           index: nowIndex,
           direction: direction,
-          history: historyGo,
+          history: !!historyGo,
           // 非redux模式值为空
           Connector: Connector,
           initContext: initContext,
@@ -317,7 +319,12 @@ export default (function () {
           PageSwipeBack: PageSwipeBack
         }, ()=>{
           // 若有注册页面切换成功回调事件，执行
-          pageDidSwitch && setTimeout(callDidSwitch, 350);
+          if (direction === 'current') {
+            callDidSwitch()
+          } else {
+            pageDidSwitch && setTimeout(callDidSwitch, 350);
+          }
+          
           // 如果有预加载项，则预加载
           preLoad && this.preLoad(preLoad);
         });
@@ -438,7 +445,7 @@ export default (function () {
       // 浏览器后退
       if (dvalue > 0) {
         if (fromDirection === 'current' || fromDirection === 'next') {
-          this.go(pageName, fromDirection === 'current' ? 'current' : 'back', pageInfo.pageData, null, true)
+          this.go(pageName, fromDirection === 'current' ? 'current' : 'back', pageInfo.pageData, null, 'backward')
         } else if (fromDirection === 'top' || fromDirection === 'bottom' || fromDirection === 'next-hover'){
           !swipeback && app.hoverBack(dvalue);
           nowPath = popHashArr.splice(-dvalue, dvalue)[0];
@@ -451,7 +458,7 @@ export default (function () {
         swipeback = false
         // 否则前进
       } else {
-        this.go(pageName, pageInfo.direction, pageInfo.pageData, null, true);
+        this.go(pageName, pageInfo.direction, pageInfo.pageData, null, 'forward');
       }
       nowIndex = thisIndex;
     }
