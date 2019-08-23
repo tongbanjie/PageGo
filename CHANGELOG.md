@@ -14,3 +14,7 @@
 1. 暴露出APP.jsx 这样用户可以拿来做SSR
 2. React16.8以后的版本可以在Context模式下使用reducer
 3. 一些手机兼容性问题的修复
+
+### 1.0.4
+1. 还原之前删除的object.assign的polyfill
+2. 在初始化的声明周期中暴露一个routeForward，用于判断当前页面是前进还是后退而来
