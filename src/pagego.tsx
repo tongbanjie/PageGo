@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import APP from './app';
 import './polyfill/string';
+import './polyfill/Object-assign';
 
 interface Param {
   pageList: Function[],
