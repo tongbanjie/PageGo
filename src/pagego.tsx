@@ -6,6 +6,7 @@ import './polyfill/Object-assign';
 
 interface Param {
   pageList: Function[],
+  viewportCss?: string,
   pageWillSwitch?: Function,
   pageDidSwitch?: Function,
   initContext?: any,
@@ -37,6 +38,8 @@ export default (function () {
   let globalProps;
   // base url
   let baseurl = '';
+  // pagepath可能的参数
+  let pageSearch = '';
   // redux模式, 默认没有
   let reduxMode = false;
   let Connector, Provider, store;
@@ -96,6 +99,8 @@ export default (function () {
         throw('redux模式需要Connector, Provider及store')
       }
 
+      const style = param.viewportCss;
+
       const fragment = document.createDocumentFragment();
       preventClickPop = document.createElement('div');
       preventClickPop.setAttribute('class', 'pagego-preventClickPop');
@@ -106,10 +111,10 @@ export default (function () {
       } else {
         screenPage = document.createElement('div');
         screenPage.setAttribute('class', 'pagego-screenPage');
+        if (style) screenPage.setAttribute('style', style);
         fragment.appendChild(screenPage);
       }
       document.body.appendChild(fragment);
-      screenPage.style.height = window.innerHeight + 'px';
 
       window.addEventListener('popstate', evt=>{
         if (evt.state) {
@@ -165,6 +170,11 @@ export default (function () {
         }
       }
       
+      if (pagepath.indexOf('?') > 0) {
+        pageSearch = pagepath.split('?')[1];
+        pagepath = pagepath.split('?')[0];
+      }
+
       const pageFunc = pageList[pagepath];
       const render = (page) => {
         this.renderGo(page, {
@@ -355,6 +365,16 @@ export default (function () {
         // 当未设置CleanUrl时将search传递下去
         appendSearch = search;
       }
+      // 如果传递的pagepath含有参数，则往下传递
+      // CleanUrl只会清除当前页面的search，因此下一个页面的search这里不会被清除
+      if (pageSearch) {
+        if (appendSearch) {
+          appendSearch = appendSearch + '&' + pageSearch
+        } else {
+          appendSearch = '?' + pageSearch
+        }
+        pageSearch = ''
+      }
 
       pushUrl = prefixUrl + appendSearch + '#' + nowPath
 
@@ -395,8 +415,16 @@ export default (function () {
       }
 
       // 若有设置使用URL参数
-      if (pageData && pageData.PushUrlParam) {
-        const appendUrl = this.getAppendParamUrl(pageData.PushUrlParam);
+      if (pageData && pageData.PushUrlParam || pageSearch) {
+        let appendUrl = '';
+        if (pageData && pageData.PushUrlParam) {
+          appendUrl = this.getAppendParamUrl(pageData.PushUrlParam);
+        }
+        // pagepath含有参数的
+        if (pageSearch) {
+          appendUrl += ((appendUrl ? '&' : '') + pageSearch);
+          pageSearch = '';
+        }
         if (initUrlStateFlag) {
           pushUrl = (pushUrl + (pushUrl.indexOf('?') > 0 ? '&' : '?') + appendUrl);
         } else {

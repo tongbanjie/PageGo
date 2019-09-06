@@ -18,3 +18,7 @@
 ### 1.0.4
 1. 还原之前删除的object.assign的polyfill
 2. 在初始化的声明周期中暴露一个routeForward，用于判断当前页面是前进还是后退而来
+
+### 1.0.5
+1. go方法的路由path可以添加url参数，即"?"符号及后面的参数，只匹配"?"前的路由
+2. init新增viewportCss参数，支持设置整个SPA的视窗，其格式是正常css样式字符串，例如你有个iphoneX的全面屏，需要在底部预留34px空间，你可以这么设置 viewportCss: "bottom:34px;"
