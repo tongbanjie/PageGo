@@ -200,8 +200,7 @@ export default (function () {
         preLoad = defaultProps.PreLoad;
       const direction = pageAttribute.direction || 'next';
       const PageName = (pageData ? pageData.PageName : '') || pageAttribute.pageName,
-        PageTitle = (pageData ? pageData.PageTitle : '') || defaultProps.PageTitle,
-        PageSwipeBack = (pageData ? pageData.PageSwipeBack : null) || defaultProps.PageSwipeBack || false
+        PageTitle = (pageData ? pageData.PageTitle : '') || defaultProps.PageTitle;
       // 将globalProps赋值给当前页面的数据，并且pageData优先
       let renderPageData = Object.assign({}, globalProps, pageData);
 
@@ -286,6 +285,9 @@ export default (function () {
           }
         }
       }
+
+      // 根据上面得出的nowIndex及其他信息获取页面是否手势返回，当页面顺序为0时
+      const PageSwipeBack = nowIndex > 0 ? ((pageData ? pageData.PageSwipeBack : null) || defaultProps.PageSwipeBack || false) : false;
 
       // 使用react渲染页面
       if (initUrlStateFlag) {
@@ -471,6 +473,8 @@ export default (function () {
       const pageName = pageInfo.name,
         thisIndex = pageInfo.index,
         dvalue = nowIndex - thisIndex;
+      // 将浏览器历史渲染页面次序赋值给当前页面顺序
+      nowIndex = thisIndex;
       // 浏览器后退
       if (dvalue > 0) {
         if (fromDirection === 'current' || fromDirection === 'next') {
@@ -489,7 +493,6 @@ export default (function () {
       } else {
         this.go(pageName, pageInfo.direction, pageInfo.pageData, null, 'forward');
       }
-      nowIndex = thisIndex;
     }
   };
 })();
