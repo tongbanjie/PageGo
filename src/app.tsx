@@ -73,7 +73,7 @@ class APP extends React.Component<Props, State> {
         try {
           const backHook = this.prePage.props.currentpage.defaultProps.BackHook;
           backHook && backHook();
-        } catch {}
+        } catch(err) {}
 
         this.setState({
           pages: [
