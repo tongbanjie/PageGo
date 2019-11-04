@@ -23,3 +23,7 @@
 1. go方法的路由path可以添加url参数，即"?"符号及后面的参数,这些参数会被附带到地址栏中, 但PageGo只匹配"?"前的路由
 2. init新增viewportCss参数，支持设置整个SPA的视窗，其格式是正常css样式字符串，例如你有个iphoneX的全面屏，需要在底部预留34px空间，你可以这么设置 viewportCss: "bottom:34px;"
 3. init中的声明周期方法暴露的数据新增routeForward参数，为当前页面由页面前进还是后退而来
+
+### 1.1.0
+1. 对pagego文件代码结构进行优化，拆分出dom, route和status文件
+2. init接受参数新增routerMode，可能值为browser和hash，分别对应使用history路由和hash路由，默认为hash路由

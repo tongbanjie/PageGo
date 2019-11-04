@@ -21,7 +21,7 @@ const initialState = {number: 1};
 
 PageGo.init({
   pageList: pageList,
-  noHashRouter: true,
+  routerMode: 'browser',
   initContext: initialState,
   // reducer: reducer
 }).then(function() {

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Touch from './touch'
 import {Context} from './context'
+import route from './route';
 
 interface PageProps {
   currentpage?: any,
@@ -23,7 +24,7 @@ const PageFactory = (pageProps) => {
 
       constructor(props) {
         super(props)
-        this.key = pageProps.PageName + pageProps.index + (props.PageKey ? ('/' + props.PageKey) : '');
+        this.key = pageProps.PagePath + pageProps.index + (props.PageKey ? ('/' + props.PageKey) : '');
         // 如果有存储的state数据，恢复至页面
         if (!!stateStore[this.key]) {
           Object.assign(this.state, stateStore[this.key]);
@@ -179,7 +180,7 @@ export class HoverPage extends React.Component<HoverProps, HoverState> {
   // 动画结束回调事件，若是关闭的话，卸载组件
   transitionEnd = () => {
     if (this.events && this.events.touchStatus === 'end' && this.events.isValidSlide) {
-      this.props.back(-1, true);
+      route.back(-1, true);
       this.props.uninstall();
     }
     this.state.close && this.props.uninstall();

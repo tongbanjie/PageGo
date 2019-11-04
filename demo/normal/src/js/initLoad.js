@@ -6,9 +6,9 @@ import '../css/exp.css';
 
 PageGo.init({
   pageList: pageList,
-  // 在本demo中会为每个page创建html文件，因此可以使用正常路由
-  // 如果你将此项noHashRouter删除，demo仍将以hash路由方式正常工作
-  noHashRouter: true
+  // 使用浏览器路由，可将此值设置为hash，demo将以hash路由方式正常工作
+  // 若不设置此项，默认以hash路由工作
+  routerMode: 'browser'
 }).then(function() {
   PageGo.go(window.initPagePath);
 });

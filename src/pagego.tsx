@@ -1,18 +1,29 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import {EventEmitter, ListenerFn} from 'eventemitter3';
 import APP from './app';
+import route from './route';
+import {viewPortInit, viewPort, showProtect, hideProtect} from './dom';
 import './polyfill/string';
 import './polyfill/Object-assign';
+import {state} from './status'
 
 interface Param {
   pageList: Function[],
+  routerMode?: 'browser' | 'hash',
   viewportCss?: string,
-  pageWillSwitch?: Function,
-  pageDidSwitch?: Function,
+  // 页面将被切换的钩子
+  pageWillSwitch?: ListenerFn,
+  // 页面切换完成的钩子
+  pageDidSwitch?: ListenerFn,
+  // context模式初始值
   initContext?: any,
   initState?: any,
+  // useReducer模式
   reducer?: Function,
+  // 全局props
   globalProps?: any,
+  // 在主页用域名，子页用具体地址时使用，该值为域名和项目名间的中间值
   MidPathWhenOnlyDomain?: string,
   baseUrlWithoutProtocol?: string,
   noHashRouter?: boolean,
@@ -23,99 +34,49 @@ interface Param {
 
 export default (function () {
   'use strict';
-  // 创建容器和保护层，并统一添加至body
-  let preventClickPop:HTMLElement, screenPage:HTMLElement;
-
-  const noHistoryState = typeof(window) === 'undefined' ? false: !window.history.replaceState ;
-  let initUrlStateFlag = true;
-  // pageList 是打包时注册的各页面的异步路由集合
-  let pageList:any[];
+  // 初始化参数
+  let Param:Param;
   let popHashArr = [], hoverTitles = [], preLoadArr = [];
-  // hash路由在url中的#后面标记页面，但是整体还是走pushstate
-  // 默认使用hash标记路由
-  let hashRouter = true;
-  // 全局props
-  let globalProps;
-  // base url
-  let baseurl = '';
-  // pagepath可能的参数
-  let pageSearch = '';
-  // redux模式, 默认没有
-  let reduxMode = false;
   let Connector, Provider, store;
   // 首次加载页面标志用于首次加载需要重新replace
-  let nowIndex = 0, nowPath:string, fromDirection:string;
+  let fromDirection:string;
   let app;
-  // 在主页用域名，子页用具体地址时使用，该值为域名和项目名间的中间值
-  let MidPathWhenOnlyDomain;
-  // 是否是手势返回
-  let swipeback = false;
-  // 默认Context值
-  let initContext = null
-  // useReducer模式
-  let reducer;
-  // 页面切换的生命周期回调
-  let pageWillSwitch, pageDidSwitch;
+  const PageEvent = new EventEmitter()
 
   return {
     init: function(param:Param): Promise<void> {
-      // 有页面列表
-      if (param && param.pageList) {
-        pageList = param.pageList
-      } else {
-        throw('需要初始化的pageList配置文件')
+      const {pageWillSwitch, pageDidSwitch, ...tempParam} = param;
+      Param = tempParam;
+      // pageList 是打包时注册的各页面的异步路由集合
+      if (!param.pageList) {
+        throw('PageGo.init needs the parameter "pageList" to initialize pages')
       }
 
-      pageWillSwitch = param.pageWillSwitch;
-      pageDidSwitch = param.pageDidSwitch;
-      initContext = param.initContext || param.initState;
-      reducer = param.reducer;
-
-      MidPathWhenOnlyDomain = param.MidPathWhenOnlyDomain
-      // 全局非redux的props
-      globalProps = param.globalProps
-      
-      // 如果手动设置了baseurl
-      if (param.baseUrlWithoutProtocol) {
-        baseurl = location.protocol + '//' + param.baseUrlWithoutProtocol;
-        baseurl = baseurl.endsWith('/') ? (baseurl + '/') : baseurl;
-      }
-
-      // 若设置不使用hash路由，设置hashRouter为false
-      if (param.noHashRouter) {
-        hashRouter = false
-      }
       let hasConnector = !!param.Connector,
         hasProvider = !!param.Provider,
         hasStore = !!param.store;
       if (hasConnector && hasProvider && hasStore) {
         // 所以redux所需参数完备，调整为rdeux模式
-        reduxMode = true;
+        state.reduxMode = true;
         Connector = param.Connector;
         Provider = param.Provider;
         store = param.store;
       } else if (hasConnector || hasProvider || hasStore) {
         // 不具备redux所有完备参数，抛错
-        throw('redux模式需要Connector, Provider及store')
+        throw('redux mode need both Connector, Provider and store')
       }
 
-      const style = param.viewportCss;
+      // 监听页面切换事件
+      pageWillSwitch && PageEvent.on('WILLSWITCH', pageWillSwitch);
+      pageDidSwitch && PageEvent.on('DIDSWITCH', pageDidSwitch);
 
-      const fragment = document.createDocumentFragment();
-      preventClickPop = document.createElement('div');
-      preventClickPop.setAttribute('class', 'pagego-preventClickPop');
-      fragment.appendChild(preventClickPop);
-      const tmpScreenPage = document.getElementById('pagego-screenPage');
-      if (tmpScreenPage) {
-        screenPage = tmpScreenPage
-      } else {
-        screenPage = document.createElement('div');
-        screenPage.setAttribute('class', 'pagego-screenPage');
-        if (style) screenPage.setAttribute('style', style);
-        fragment.appendChild(screenPage);
-      }
-      document.body.appendChild(fragment);
+      // 路由初始化
+      route.init(Param);
 
+      // 视窗初始化
+      viewPortInit(Param);
+
+      // 监听路由事件
       window.addEventListener('popstate', evt=>{
         if (evt.state) {
           this.renderHistoryPage(evt.state);
@@ -137,7 +98,7 @@ export default (function () {
         for (let i = 0; i < pathLen; i++) {
           // preLoadArr是已经预加载的列表，未预加载的才加载
           if (preLoadArr.indexOf(pathArr[i]) < 0) {
-            pageList[pathArr[i]]();
+            Param.pageList[pathArr[i]]();
             preLoadArr.push(pathArr[i]);
           }
         }
@@ -156,39 +117,24 @@ export default (function () {
       this.go(page, 'current', pageData, callback)
     },
 
-    go: function(page: string, direction?, pageData?, callback?, historyGo?, replace?){
-      let pagepath = page;
-      // 当使用hash路由时
-      // 首次进入判断是否是刷新
-      if (initUrlStateFlag) {
-        const hashstring = window.location.hash;
-        if (hashstring) {
-          let hash = hashstring.split('#')[1];
-          if (!!pageList[hash]) {
-            pagepath = hash;
-          }
-        }
-      }
-      
-      if (pagepath.indexOf('?') > 0) {
-        pageSearch = pagepath.split('?')[1];
-        pagepath = pagepath.split('?')[0];
-      }
-
-      const pageFunc = pageList[pagepath];
+    go: function(path: string, direction?:string, pageData?:Object, callback?, historyGo?, replace?){
+      const [pagepath, pageSearch] = route.getRenderPath(path, Param.pageList);
+      const pageFunc = Param.pageList[pagepath];
       const render = (page) => {
         this.renderGo(page, {
-          pageName: pagepath,
+          pagePath: pagepath,
+          pageSearch: pageSearch,
           direction: direction
         }, pageData, historyGo, replace);
         callback && callback();
       }
-      // 同步页面
+      // 通过判断是否有页面组件属性来判断是否是同步页面
       if (pageFunc.defaultProps || pageFunc.hookPage) {
         render(pageFunc);
       } else {
-        // 根据路由动态加载页面js
-        pageList[pagepath]().then(page => {
+        // 否则认为是异步按需加载
+        // 根据路由动态加载页面组件
+        Param.pageList[pagepath]().then(page => {
           render(page);
         })
       }
@@ -199,28 +145,19 @@ export default (function () {
       const defaultProps = currentpage.defaultProps || currentpage.hookPage,
         preLoad = defaultProps.PreLoad;
       const direction = pageAttribute.direction || 'next';
-      const PageName = (pageData ? pageData.PageName : '') || pageAttribute.pageName,
+      const PagePath = pageAttribute.pagePath,
         PageTitle = (pageData ? pageData.PageTitle : '') || defaultProps.PageTitle;
       // 将globalProps赋值给当前页面的数据，并且pageData优先
-      let renderPageData = Object.assign({}, globalProps, pageData);
+      let renderPageData = Object.assign({}, Param.globalProps, pageData);
 
-      // 若有注册页面开始回调事件，执行
-      pageWillSwitch && pageWillSwitch({
-        pageName: PageName,
+      const switchParam = {
+        pagePath: PagePath,
         pageTitle: PageTitle,
-        pageData: pageData,
+        pageData: renderPageData,
         routeForward: historyGo ? historyGo === 'forward' : true
-      });
-
-      // 若有注册页面切换成功回调事件，执行
-      const callDidSwitch = () => {
-        pageDidSwitch && pageDidSwitch({
-          pageName: PageName,
-          pageTitle: PageTitle,
-          pageData: renderPageData,
-          routeForward: historyGo ? historyGo === 'forward' : true
-        })
       }
+      // 若有注册页面开始回调事件，执行
+      PageEvent.emit('WILLSWITCH', switchParam)
 
       // 根据是否是浏览器的前进后退操作确定正常到达当前页面的页面方向
       // 此页面方向提供给下一次浏览器操作时所用
@@ -230,268 +167,136 @@ export default (function () {
         fromDirection = direction;
       }
 
+      // 若是有预加载页面注册监听页面加载完成事件
+      if (preLoad) {
+        PageEvent.once('LOADPRE', ()=>{this.preLoad(preLoad)});
+      }
+
       if (direction === 'next' || direction === 'back') {
-        if (!initUrlStateFlag) preventClickPop.style.display = 'block';
+        !state.firstRender && showProtect();
       } else if (direction === 'top' || direction === 'bottom'|| direction === 'next-hover') {
         // 展开保护层
-        preventClickPop.style.display = 'block';
+        showProtect();
         setTimeout(function(){
-          preventClickPop.style.display = 'none';
+          hideProtect();
         }, 350)
-        popHashArr.push(nowPath);
+        popHashArr.push(state.nowPath);
         hoverTitles.push(document.title);
       }
 
-      nowPath = PageName.toLowerCase();
+      state.nowPath = PagePath.toLowerCase();
       document.title = PageTitle || '';
 
-      if (!this.entryPageName) this.entryPageName = nowPath;
+      if (!this.entryPageName) this.entryPageName = state.nowPath;
 
       // 非历史路由需要设置前往路径及pushstate
       if (!historyGo) {
-        // 非历史路由不包含back类型
-        const pushUrl = hashRouter ? this.getHashPushUrl(defaultProps, pageData) :  this.getPushUrl(defaultProps, pageData);
         // 如果是首次加载(包括刷新等)
-        if (initUrlStateFlag) {
-          const pgState = window.history.state;
-          if (pgState && pgState.hasOwnProperty('index')) {
-            nowIndex = pgState.index;
+        if (state.firstRender) {
+          const historyState = window.history.state;
+          if (historyState && historyState.hasOwnProperty('index')) {
+            state.nowIndex = historyState.index;
           }
           // 若是刷新页面时，使用之前保留的数据
-          if (pgState && pgState.pageData) {
-            pageData = renderPageData = pgState.pageData;
+          if (historyState && historyState.pageData) {
+            pageData = renderPageData = historyState.pageData;
           }
         }
 
-        const pageInfo = {
-          name: nowPath,
-          index: nowIndex,
+        route.setRoutePath({
+          path: state.nowPath,
+          index: state.nowIndex,
           direction: direction,
+          pageSearch: pageAttribute.pageSearch,
+          MidPathWhenOnlyDomain: Param.MidPathWhenOnlyDomain,
+          replace: replace,
           // pushState及replaceState 是不允许存入function的
           // 通过这种方式去除function
           // 因此，跨页面传参时不要传入函数，因为这些函数很可能会失效
           pageData: pageData ? JSON.parse(JSON.stringify(pageData)) : null
-        }
-
-        // 若不支持pushState，pushUrl已在getPushUrl方法中添加了传参
-        if(noHistoryState && !initUrlStateFlag) {
-          window.location.href = pushUrl;
-        } else {
-          if (replace || initUrlStateFlag) {
-            window.history.replaceState(pageInfo, null, pushUrl)
-          } else {
-            pageInfo.index = nowIndex = (nowIndex + 1);
-            window.history.pushState(pageInfo, null, pushUrl)
-          }
-        }
-      }
-
-      // 根据上面得出的nowIndex及其他信息获取页面是否手势返回，当页面顺序为0时
-      const PageSwipeBack = nowIndex > 0 ? ((pageData ? pageData.PageSwipeBack : null) || defaultProps.PageSwipeBack || false) : false;
-
-      // 使用react渲染页面
-      if (initUrlStateFlag) {
-        initUrlStateFlag = false;
-        const ctRef:any = React.createRef();
-        let appProps = {
-          ref: ctRef,
-          currentpage: currentpage,
-          PageName: PageName,
-          index: nowIndex,
-          renderPageData: renderPageData,
-          preventClickPop: preventClickPop,
-          back: this.back,
-          initContext: initContext,
-          reducer: reducer,
-          PageSwipeBack: PageSwipeBack
-        }
-        ReactDOM.hydrate(
-          reduxMode
-          ? <Provider store={ store }>
-              <APP {...appProps} Connector = { Connector }  />
-            </Provider>
-          : <APP {...appProps} />
-          , screenPage, ()=>{
-              app = ctRef.current;
-              callDidSwitch();
-              // 如果有预加载项，则预加载
-              preLoad && this.preLoad(preLoad);
-          })
-      } else {
-        app.renderPage({
-          currentpage: currentpage,
-          PageName: PageName,
-          renderPageData: renderPageData,
-          index: nowIndex,
-          direction: direction,
-          history: !!historyGo,
-          // 非redux模式值为空
-          Connector: Connector,
-          initContext: initContext,
-          reducer: reducer,
-          PageSwipeBack: PageSwipeBack
-        }, ()=>{
-          // 若有注册页面切换成功回调事件，执行
-          if (direction === 'current') {
-            callDidSwitch()
-          } else {
-            pageDidSwitch && setTimeout(callDidSwitch, 350);
-          }
-          
-          // 如果有预加载项，则预加载
-          preLoad && this.preLoad(preLoad);
         });
       }
-    },
 
-    getHashPushUrl: function(defaultProps, pageData){
-      const prefixUrl = location.origin + location.pathname;
-      let pushUrl = '', search = location.search, appendSearch = '';
-
-      // 有加url参数的进行变更
-      if (pageData && pageData.PushUrlParam) {
-        appendSearch = this.getAppendParamUrl(pageData.PushUrlParam);
-        // 老版本不能兼容pushState, 通过url传递Props
-        if (noHistoryState && pushUrl.indexOf('passprops')<0) {
-          const passProps = ('passprops=' + encodeURIComponent(JSON.stringify(pageData)));
-          appendSearch = appendSearch + '&' + passProps;
-        }
-
-        // 当未设置CleanUrl时将search传递下去
-        if (!pageData.CleanUrl) {
-          appendSearch = (search ? (search + '&') : '?') + appendSearch;
-        } else {
-          appendSearch = '?' + appendSearch
-        }
-      } else if (!pageData || !pageData.CleanUrl) {
-        // 当未设置CleanUrl时将search传递下去
-        appendSearch = search;
+      let appProps = {
+        currentpage: currentpage,
+        PagePath: PagePath,
+        renderPageData: renderPageData,
+        direction: direction,
+        history: !!historyGo,
+        initContext: Param.initContext || Param.initState,
+        reducer: Param.reducer,
+        // 根据上面得出的nowIndex及其他信息获取页面是否手势返回，当页面顺序为0时
+        PageSwipeBack: state.nowIndex > 0 ? ((pageData ? pageData.PageSwipeBack : null) || defaultProps.PageSwipeBack || false) : false
       }
-      // 如果传递的pagepath含有参数，则往下传递
-      // CleanUrl只会清除当前页面的search，因此下一个页面的search这里不会被清除
-      if (pageSearch) {
-        if (appendSearch) {
-          appendSearch = appendSearch + '&' + pageSearch
-        } else {
-          appendSearch = '?' + pageSearch
-        }
-        pageSearch = ''
-      }
-
-      pushUrl = prefixUrl + appendSearch + '#' + nowPath
-
-      return pushUrl
-
-    },
-
-    getPushUrl: function(defaultProps, pageData){
-      const preUrl = location.origin + location.pathname;
-      const hash = location.hash, search = location.search;
-      const suffixPath = nowPath + (preUrl.endsWith('.html') ? '.html' : '');
-      let pushUrl = '';
-
-      // 获取基础url
-      if (!baseurl && initUrlStateFlag) {
-        if (preUrl.endsWith(suffixPath)) {
-          baseurl = preUrl.replace(suffixPath, '')
-        } else {
-          baseurl = preUrl;
-        }
-      }
-
-      if (window.location.pathname === '/') {
-        // 如https://m.xxx.com/ 的形态情况下处理
-        pushUrl = preUrl;
+      // 使用react渲染页面
+      if (state.firstRender) {
+        this.renderFirstPage(appProps, switchParam);
       } else {
-        if (MidPathWhenOnlyDomain) {
-          pushUrl = baseurl + MidPathWhenOnlyDomain + suffixPath;
-        } else {
-          // 默认url
-          pushUrl = baseurl + suffixPath;
-        }
+        this.renderPage(appProps, switchParam);
       }
-      
-      // 当未设置CleanUrl时将hash和search传递下去
-      if (!pageData || !pageData.CleanUrl) {
-        pushUrl = pushUrl + search + hash;
-      }
-
-      // 若有设置使用URL参数
-      if (pageData && pageData.PushUrlParam || pageSearch) {
-        let appendUrl = '';
-        if (pageData && pageData.PushUrlParam) {
-          appendUrl = this.getAppendParamUrl(pageData.PushUrlParam);
-        }
-        // pagepath含有参数的
-        if (pageSearch) {
-          appendUrl += ((appendUrl ? '&' : '') + pageSearch);
-          pageSearch = '';
-        }
-        if (initUrlStateFlag) {
-          pushUrl = (pushUrl + (pushUrl.indexOf('?') > 0 ? '&' : '?') + appendUrl);
-        } else {
-          pushUrl = pushUrl.split('?')[0] + '?' + appendUrl;
-        }
-      }
-
-      // 兼容不支持history.state的设备
-      if (noHistoryState && pageData && pushUrl.indexOf('passprops')<0) {
-        const passProps = ('passprops=' + encodeURIComponent(JSON.stringify(pageData)));
-        pushUrl = (pushUrl + (pushUrl.indexOf('?') > 0 ? '&' : '?') + passProps);
-      }
-
-      return pushUrl
     },
-
-    getAppendParamUrl: function(param){
-      let appendArr = [];
-      for (var key in param) {
-        if (typeof(param[key]) == 'object') {
-          appendArr.push(key + '=' + JSON.stringify(param[key]))
+    // 渲染第一个页面
+    renderFirstPage: function(props, switchParam){
+      state.firstRender = false;
+      const ctRef:any = React.createRef();
+      ReactDOM.hydrate(
+        state.reduxMode
+        ? <Provider store={ store }>
+            <APP {...props} ref={ctRef} Connector = { Connector }  />
+          </Provider>
+        : <APP ref={ctRef} {...props} />
+        , viewPort, ()=>{
+            app = ctRef.current;
+            PageEvent.emit('DIDSWITCH', switchParam);
+            PageEvent.emit('LOADPRE');
+        })
+    },
+    // 渲染后续页面
+    renderPage: function(props, switchParam){
+      app.renderPage({
+        ...props,
+        // 非redux模式值为空
+        Connector: Connector
+      }, ()=>{
+        // 若有注册页面切换成功回调事件，执行
+        if (props.direction === 'current') {
+          PageEvent.emit('DIDSWITCH', switchParam)
         } else {
-          appendArr.push(key + '=' + param[key])
+          setTimeout(()=>{PageEvent.emit('DIDSWITCH', switchParam)}, 350);
         }
-      }
-      return appendArr.join('&')
+        PageEvent.emit('LOADPRE');
+      });
     },
     // 类似于window.location.replace方法
     replace: function(pagepath, direction, pageData, callback?) {
       this.go(pagepath, direction, pageData, callback, null, true)
     },
-    back: function(num, touchback?) {
-      window.history.go(num || -1);
-      swipeback = !!touchback;
+    back: function(num?: number, touchback?: boolean) {
+      route.back(num, touchback);
     },
-    jumpOut: false,
     renderHistoryPage: function(pageInfo) {
-      // ios safari返回可能会存在direction为空值的情况
-      if (pageInfo.direction == null && this.jumpOut) {
-        this.jumpOut = false;
-        return;
-      }
-
-      const pageName = pageInfo.name,
+      const pagePath = pageInfo.path,
         thisIndex = pageInfo.index,
-        dvalue = nowIndex - thisIndex;
+        dvalue = state.nowIndex - thisIndex;
       // 将浏览器历史渲染页面次序赋值给当前页面顺序
-      nowIndex = thisIndex;
+      state.nowIndex = thisIndex;
       // 浏览器后退
       if (dvalue > 0) {
         if (fromDirection === 'current' || fromDirection === 'next') {
-          this.go(pageName, fromDirection === 'current' ? 'current' : 'back', pageInfo.pageData, null, 'backward')
+          this.go(pagePath, fromDirection === 'current' ? 'current' : 'back', pageInfo.pageData, null, 'backward')
         } else if (fromDirection === 'top' || fromDirection === 'bottom' || fromDirection === 'next-hover'){
-          !swipeback && app.hoverBack(dvalue);
-          nowPath = popHashArr.splice(-dvalue, dvalue)[0];
+          !state.swipeback && app.hoverBack(dvalue);
+          state.nowPath = popHashArr.splice(-dvalue, dvalue)[0];
           // hover返回后重置title
           document.title = hoverTitles.splice(-dvalue, dvalue)[0];
           fromDirection = pageInfo.direction;
         } else {
           console.error('路由出错了')
         }
-        swipeback = false
+        state.swipeback = false
         // 否则前进
       } else {
-        this.go(pageName, pageInfo.direction, pageInfo.pageData, null, 'forward');
+        this.go(pagePath, pageInfo.direction, pageInfo.pageData, null, 'forward');
       }
     }
   };

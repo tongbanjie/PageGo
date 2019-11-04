@@ -2,10 +2,10 @@ import * as React from 'react';
 import { Page, HoverPage } from './page';
 import Container from './container';
 import {Provider, ReducerProvider} from './context';
+import {state} from './status'
 
 interface Props {
-  PageName?: string,
-  index?: string|number,
+  PagePath?: string,
   currentpage: any,
   renderPageData?: any,
   key?: string,
@@ -13,7 +13,6 @@ interface Props {
   initContext?: any,
   reducer?: Function,
   PageSwipeBack: boolean,
-  preventClickPop: HTMLElement,
   back: Function
 }
 interface State {
@@ -32,7 +31,7 @@ class APP extends React.Component<Props, State> {
 
   constructor(props:Props) {
     super(props);
-    this.nowPage = <Page key={props.PageName ? (props.PageName + props.index) : 'ssr'} {...props} />;
+    this.nowPage = <Page key={props.PagePath ? (props.PagePath + state.nowIndex) : 'ssr'} {...props} />;
     this.hoverRefs = [];
 
     this.state = {
@@ -50,8 +49,8 @@ class APP extends React.Component<Props, State> {
 
   // 渲染页面方法
   renderPage = (pageInfo, callback) => {
+    let key = pageInfo.PagePath + state.nowIndex;
     if (pageInfo.direction == 'next' || pageInfo.direction == 'back' || pageInfo.direction == 'current') {
-      let key = pageInfo.PageName + pageInfo.index;
       // 如果到往的页面就是当前页面的来源页面，则交换页面，不需要重新渲染
       if (this.prePage && this.prePage.key === key && pageInfo.history) {
         [this.prePage, this.nowPage] = [this.nowPage, this.prePage]
@@ -101,8 +100,8 @@ class APP extends React.Component<Props, State> {
       this.hoverRefs.push(React.createRef());
       this.setState({
         PageSwipeBack: pageInfo.PageSwipeBack,
-        hoverPages: this.state.hoverPages.concat(<HoverPage ref={this.hoverRefs[len]} back={this.props.back} uninstall={this.hoverUninstall} key={pageInfo.PageName + pageInfo.index} {...pageInfo} />)
-      })
+        hoverPages: this.state.hoverPages.concat(<HoverPage ref={this.hoverRefs[len]} uninstall={this.hoverUninstall} key={key} {...pageInfo} />)
+      }, callback)
     }
   }
 
@@ -162,8 +161,6 @@ class APP extends React.Component<Props, State> {
         <Container
           reSetPage={this.reSetPage}
           PageSwipeBack={this.state.PageSwipeBack}
-          preventClickPop={this.props.preventClickPop}
-          back={this.props.back}
           direction={this.state.direction}
           pageSetType={this.state.pageSetType}>
           {

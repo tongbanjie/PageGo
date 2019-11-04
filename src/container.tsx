@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {EventEmitter} from 'eventemitter3';
+import {showProtect, hideProtect} from './dom';
+import route from './route';
 import Touch from './touch';
 
 interface Props {
   reSetPage: Function,
-  preventClickPop: HTMLElement,
-  back: Function,
   PageSwipeBack: boolean,
   pageSetType: string,
   direction: string
@@ -92,16 +92,16 @@ class Container extends React.Component<Props> {
       if (!this.events.isValidSlide) { this.events.touchStatus = '';return}
       EE.once('swipeEnd', ()=>{
         this.props.reSetPage();
-        this.props.preventClickPop.style.display = 'none';
+        hideProtect();
       });
-      this.props.back(-1, true);
+      route.back(-1, true);
     } else {
       const el = e || window.event;
       const target = el.target || el.srcElement;
       if (target.tagName.toLowerCase() === 'div' && target.id == 'pageContainer') {
         // 销毁旧旧页面并重置当前页面
         this.props.reSetPage();
-        this.props.preventClickPop.style.display = 'none';
+        hideProtect();
       }
     }
   }

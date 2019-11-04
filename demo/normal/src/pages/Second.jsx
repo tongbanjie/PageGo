@@ -6,7 +6,7 @@ class Second extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      message: 'Hello PageGo!',
+      message: 'Hello PageGo!'
     }
   }
 

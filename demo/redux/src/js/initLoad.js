@@ -9,7 +9,7 @@ import '../css/exp.css';
 
 PageGo.init({
   pageList: pageList,
-  noHashRouter: true,
+  routerMode: 'browser',
   Connector: Connector,
   Provider: Provider,
   store: store
