@@ -105,16 +105,16 @@ export default (function () {
       }
     },
 
-    next: function(page: string, pageData?, callback?){
-      this.go(page, 'next', pageData, callback)
+    next: function(path: string, pageData?, callback?){
+      this.go(path, 'next', pageData, callback)
     },
 
-    hover: function(page: string, pageData?, callback?){
-      this.go(page, 'next-hover', pageData, callback)
+    hover: function(path: string, pageData?, callback?){
+      this.go(path, 'next-hover', pageData, callback)
     },
 
-    jump: function(page: string, pageData?, callback?){
-      this.go(page, 'current', pageData, callback)
+    jump: function(path: string, pageData?, callback?){
+      this.go(path, 'current', pageData, callback)
     },
 
     go: function(path: string, direction?:string, pageData?:Object, callback?, historyGo?, replace?){
