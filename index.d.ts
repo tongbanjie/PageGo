@@ -1,4 +1,5 @@
-import {Provider, InferableComponentEnhancerWithProps, Store} from '@types/react-redux'
+import {Provider, InferableComponentEnhancerWithProps} from 'react-redux'
+import {Store} from 'redux'
 
 interface SwitchData{
   /**
@@ -19,11 +20,11 @@ interface SwitchData{
   routeForward: boolean
 }
 
-interface Param{
+interface InitParam{
   /**
-   * Page component list, see detail https://github.com/tongbanjie/PageGo/wiki/PageList
+   * Page component object list, see detail https://github.com/tongbanjie/PageGo/wiki/PageList
    */
-  pageList: Function[],
+  pageList: object,
   /**
    * You should use "routerMode" to replace this
    */
@@ -50,36 +51,39 @@ interface Param{
   globalProps?: object,
   initContext?: object,
   initState?: object,
-  Connector?: InferableComponentEnhancerWithProps,
-  Provider?: Provider
+  Connector?: InferableComponentEnhancerWithProps<{any},{}>,
+  /**
+   * Provider: import { Provider } from 'react-redux'
+   */
+  Provider?: any,
   store?: Store
 }
 
 declare module 'pagego'{
-  function init(param:Param):Promise<void>;
+  function init(param:InitParam):Promise<void>;
   /**
    * The "go" method use page path to render page
    */
-  function go(path:string, direction?:'next' | 'top' | 'bottom' | 'next-hover' | 'current', pageData?:Object, callback?:function():void):void;
+  function go(path:string, direction?:'next' | 'top' | 'bottom' | 'next-hover' | 'current', pageData?:Object, callback?:()=>void):void;
   /**
    * Convenient way of go('YOURPATH', 'next')
    */
-  function next(path:string, pageData?:Object, callback?:function():void):void;
+  function next(path:string, pageData?:Object, callback?:()=>void):void;
 
   /**
    * Convenient way of go('YOURPATH', 'next-hover')
    */
-  function hover(path:string, pageData?:Object, callback?:function():void):void;
+  function hover(path:string, pageData?:Object, callback?:()=>void):void;
 
   /**
    * Convenient way of go('YOURPATH', 'current')
    */
-  function jump(path:string, pageData?:Object, callback?:function():void):void;
+  function jump(path:string, pageData?:Object, callback?:()=>void):void;
 
   /**
    * Like window.location.replace
    */
-  function replace(path:string, direction?:'next' | 'top' | 'bottom' | 'next-hover' | 'current', pageData?:Object, callback?:function():void):void;
+  function replace(path:string, direction?:'next' | 'top' | 'bottom' | 'next-hover' | 'current', pageData?:Object, callback?:()=>void):void;
 
   /**
    * Like window.history.back

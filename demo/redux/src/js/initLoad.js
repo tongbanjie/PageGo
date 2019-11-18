@@ -14,7 +14,7 @@ PageGo.init({
   Provider: Provider,
   store: store
 }).then(function() {
-  PageGo.go(window.initPagePath);
+  PageGo.go(initPagePath);
 });
 
 !!document.body && FastClick.attach(document.body);

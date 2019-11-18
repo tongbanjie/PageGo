@@ -26,4 +26,5 @@
 
 ### 1.1.0
 1. 对pagego文件代码结构进行优化，拆分出dom, route和status文件
-2. init接受参数新增routerMode，可能值为browser和hash，分别对应使用history路由和hash路由，默认为hash路由
+2. 新增PageGo的ts声明文件
+3. init接受参数新增routerMode，可能值为browser和hash，分别对应使用history路由和hash路由，默认为hash路由
