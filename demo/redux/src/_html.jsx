@@ -11,7 +11,6 @@ class _html extends React.Component {
           <meta content="black" name="apple-mobile-web-app-status-bar-style" />
           <meta content="telephone=no" name="format-detection" />
           <meta content="email=no" name="format-detection" />
-          <link type="text/css" rel="stylesheet" href="./css/base.css" inline="true"/>
           <title></title>
         </head>
         <body>
@@ -19,7 +18,6 @@ class _html extends React.Component {
               window.initPagePath = '${this.props.path}';
             `
           }}></script>
-          <script src="./js/init.js"></script>
         </body>
       </html>
       );

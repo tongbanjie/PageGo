@@ -7,11 +7,11 @@
     "url": "https://github.com/tongbanjie/PageGo"
   },
   "scripts": {
-    "build": "gulp -p",
-    "dev": "gulp dev"
+    "build": "rm -rf dist && webpack --env=production",
+    "dev": "webpack-dev-server --env=development"
   },
   "dependencies": {
-    "pagego": "^1.1.0",
+    "pagego": "^1.0.5",
     "fastclick": "^1.0.6",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -26,21 +26,17 @@
     "babel-preset-react": "^6.11.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.24.1",
-    "pretty": "^2.0.0",
     "css-loader": "^0.28.11",
     "file-loader": "^1.1.11",
-    "fs-extra": "^6.0.1",
-    "gulp": "^4.0.2",
-    "gulp-connect": "^5.7.0",
-    "gulp-rev-replace": "^0.4.4",
-    "gulp-watch": "^5.0.1",
-    "iscroll": "^5.2.0",
+    "pretty": "^2.0.0",
     "style-loader": "^0.21.0",
-    "webpack": "^4.10.2",
+    "webpack": "^4.41.5",
     "webpack-chunk-hash": "^0.6.0",
-    "webpack-cli": "^3.1.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1",
     "webpack-manifest-plugin": "^2.0.4",
-    "yargs": "^5.0.0"
+    "html-webpack-plugin": "^4.0.0-beta.11",
+    "mini-css-extract-plugin": "^0.9.0"
   },
   "license": "MIT"
 }

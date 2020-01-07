@@ -1,6 +1,5 @@
 node_modules
-dest
-packCache
+dist
 package-lock.json
 .DS_Store
 *.zip

@@ -1,8 +1,8 @@
 import PageGo from 'pagego';
-// 该文件会在打包时自动创建
-import pageList from '../../packCache/importpage.js';
+import pageList from './js/pagesroute';
 import FastClick from 'fastclick';
-import '../css/exp.css';
+import './css/base.css';
+import './css/exp.css';
 
 PageGo.init({
   pageList: pageList,
@@ -10,7 +10,8 @@ PageGo.init({
   },
   // 使用浏览器路由，可将此值设置为hash，demo将以hash路由方式正常工作
   // 若不设置此项，默认以hash路由工作
-  routerMode: 'browser'
+  routerMode: 'browser',
+  renderMethod: process.env.NODE_ENV === 'production' ? 'hydrate' : 'render'
 }).then(function() {
   PageGo.go(window.initPagePath);
 });

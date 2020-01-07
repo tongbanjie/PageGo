@@ -21,6 +21,8 @@ interface Param {
   initState?: any,
   // useReducer模式
   reducer?: Function,
+  // 渲染方式，默认为hydrate
+  renderMethod?: 'render' | 'hydrate',
   // 全局props
   globalProps?: any,
   // 在主页用域名，子页用具体地址时使用，该值为域名和项目名间的中间值
@@ -241,7 +243,7 @@ export default (function () {
     renderFirstPage: function(props, switchParam){
       state.firstRender = false;
       const ctRef:any = React.createRef();
-      ReactDOM.hydrate(
+      ReactDOM[Param.renderMethod || 'hydrate'](
         state.reduxMode
         ? <Provider store={ store }>
             <APP {...props} ref={ctRef} Connector = { Connector }  />
