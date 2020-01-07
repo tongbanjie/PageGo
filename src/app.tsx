@@ -70,7 +70,8 @@ class APP extends React.Component<Props, State> {
         }, callback)
       } else if (pageInfo.direction == 'back') {
         try {
-          const backHook = this.prePage.props.currentpage.defaultProps.BackHook;
+          const wrappedpage = this.prePage.props.currentpage.WrappedComponent || this.prePage.props.currentpage;
+          const backHook = wrappedpage.defaultProps.BackHook;
           backHook && backHook();
         } catch(err) {}
 

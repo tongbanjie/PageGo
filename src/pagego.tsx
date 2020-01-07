@@ -142,7 +142,9 @@ export default (function () {
 
     // 获取到要滑动至的页面，并进行位置设置
     renderGo: function(currentpage, pageAttribute, pageData?, historyGo?, replace?) {
-      const defaultProps = currentpage.defaultProps || currentpage.hookPage,
+      // 若是经过redux connect函数包装过的页面组件，取内部组件
+      const mayWrappedPage = currentpage.WrappedComponent || currentpage;
+      const defaultProps = mayWrappedPage.defaultProps || mayWrappedPage.hookPage,
         preLoad = defaultProps.PreLoad;
       const direction = pageAttribute.direction || 'next';
       const PagePath = pageAttribute.pagePath,

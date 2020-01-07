@@ -50,21 +50,23 @@ export class Page extends React.Component<PageProps> {
   render() {
     const {currentpage, ...pageProps} = this.props;
     let InnerPage;
-    // hook 页面不支持state恢复
-    if (!!currentpage && currentpage.hookPage) {
-      InnerPage = currentpage;
-    } else {
-      if (currentpage) {
-        InnerPage = PageFactory({
-          ...pageProps
-        })(currentpage);
+    if (currentpage) {
+      // hook 页面不支持state恢复
+      const wrappedpage = currentpage.WrappedComponent || currentpage;
+      if (!!wrappedpage && wrappedpage.hookPage) {
+        InnerPage = currentpage;
+      } else {
+        if (currentpage) {
+          InnerPage = PageFactory({
+            ...pageProps
+          })(currentpage);
+        }
+      }
+      // 如果是redux模式 通过Connector生成新的InnerPage
+      if (this.props.Connector) {
+        InnerPage = this.props.Connector(InnerPage);
       }
     }
-    // 如果是redux模式 通过Connector生成新的InnerPage
-    if (this.props.Connector) {
-      InnerPage = this.props.Connector(InnerPage);
-    }
-
     return (
       <div className='pagego-page'>
       {
@@ -111,8 +113,10 @@ export class HoverPage extends React.Component<HoverProps, HoverState> {
 
     const {currentpage, ...pageProps} = props
     let InnerPage;
+    // 可能已经是被connect过的组件
+    const wrappedpage = currentpage.WrappedComponent || currentpage;
     // hook 页面不支持state恢复及redux模式
-    if (!!currentpage && currentpage.hookPage) {
+    if (!!wrappedpage && wrappedpage.hookPage) {
       InnerPage = currentpage
     } else {
       InnerPage = PageFactory({
